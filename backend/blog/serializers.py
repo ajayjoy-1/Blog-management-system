@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import Post, Comment
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -52,3 +53,12 @@ class PostDetailSerializer(PostListSerializer):
 
     class Meta(PostListSerializer.Meta):
         fields = PostListSerializer.Meta.fields + ('comments',)
+
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user_id'] = self.user.id
+        data['username'] = self.user.username
+        return data        
