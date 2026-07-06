@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
-import HomePage from './pages/HomePage';
+import PostListPage from './pages/PostListPage';
+import PostDetailPage from './pages/PostDetailPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -11,7 +12,15 @@ function App() {
         path="/"
         element={
           <ProtectedRoute>
-            <HomePage />
+            <PostListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/posts/:id"
+        element={
+          <ProtectedRoute>
+            <PostDetailPage />
           </ProtectedRoute>
         }
       />
