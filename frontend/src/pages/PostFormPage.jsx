@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getPost, createPost, updatePost } from '../api/posts';
 import Navbar from '../components/Navbar';
+import Loading from '../components/Loading';
+import ErrorMessage from '../components/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 
 function PostFormPage() {
@@ -60,14 +62,14 @@ function PostFormPage() {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
 
   return (
     <div>
       <Navbar />
       <div style={{ maxWidth: '700px', margin: '2rem auto' }}>
         <h2>{isEditMode ? 'Edit Post' : 'New Post'}</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <ErrorMessage message={error} />
         <form onSubmit={handleSubmit}>
           <div>
             <input

@@ -4,6 +4,8 @@ import { getPost, deletePost } from '../api/posts';
 import Navbar from '../components/Navbar';
 import CommentItem from '../components/CommentItem';
 import CommentForm from '../components/CommentForm';
+import Loading from '../components/Loading';
+import ErrorMessage from '../components/ErrorMessage';
 import { useAuth } from '../context/AuthContext';
 
 function PostDetailPage() {
@@ -56,8 +58,8 @@ function PostDetailPage() {
     setComments((prev) => prev.filter((c) => c.id !== deletedId));
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p style={{ color: 'red' }}>{error}</p>;
+  if (loading) return <Loading />;
+  if (error) return <ErrorMessage message={error} />;
 
   const isPostOwner = post.author.id === user.id;
 

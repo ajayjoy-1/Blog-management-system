@@ -1,3 +1,5 @@
+import Loading from '../components/Loading';
+import ErrorMessage from '../components/ErrorMessage';
 import { useState, useEffect } from 'react';
 import { getPosts } from '../api/posts';
 import Navbar from '../components/Navbar';
@@ -23,14 +25,14 @@ function PostListPage() {
     fetchPosts();
   }, []);
 
-  if (loading) return <p>Loading posts...</p>;
+  if (loading) return <Loading />;
 
   return (
     <div>
       <Navbar />
       <div style={{ maxWidth: '700px', margin: '2rem auto' }}>
         <h2>All Posts</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <ErrorMessage message={error} />
         {posts.length === 0 && !error && <p>No posts yet.</p>}
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
