@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { getPost } from '../api/posts';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { getPost, deletePost } from '../api/posts';
 import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext';
 
 function PostDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,8 +28,21 @@ function PostDetailPage() {
     fetchPost();
   }, [id]);
 
+  const handleDelete = async () => {
+    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+
+    try {
+      await deletePost(id);
+      navigate('/');
+    } catch (err) {
+      setError('Failed to delete post.');
+    }
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
+
+  const isOwner = post.author.id === user.id;
 
   return (
     <div>
@@ -36,6 +52,14 @@ function PostDetailPage() {
         <small>
           By {post.author.username} · {new Date(post.created_at).toLocaleDateString()}
         </small>
+
+        {isOwner && (
+          <div style={{ margin: '0.5rem 0' }}>
+            <Link to={`/posts/${id}/edit`}>Edit</Link>
+            <button onClick={handleDelete} style={{ marginLeft: '1rem' }}>Delete</button>
+          </div>
+        )}
+
         <p style={{ whiteSpace: 'pre-wrap' }}>{post.content}</p>
 
         <hr />
