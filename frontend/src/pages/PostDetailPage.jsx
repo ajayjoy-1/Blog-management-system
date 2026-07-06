@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getPost, deletePost } from '../api/posts';
 import Navbar from '../components/Navbar';
+import CommentItem from '../components/CommentItem';
+import CommentForm from '../components/CommentForm';
 import { useAuth } from '../context/AuthContext';
 
 function PostDetailPage() {
@@ -9,6 +11,7 @@ function PostDetailPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [post, setPost] = useState(null);
+  const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -18,6 +21,7 @@ function PostDetailPage() {
       try {
         const data = await getPost(id);
         setPost(data);
+        setComments(data.comments);
       } catch (err) {
         setError('Post not found.');
       } finally {
@@ -28,9 +32,8 @@ function PostDetailPage() {
     fetchPost();
   }, [id]);
 
-  const handleDelete = async () => {
+  const handleDeletePost = async () => {
     if (!window.confirm('Delete this post? This cannot be undone.')) return;
-
     try {
       await deletePost(id);
       navigate('/');
@@ -39,10 +42,24 @@ function PostDetailPage() {
     }
   };
 
+  const handleCommentAdded = (newComment) => {
+    setComments((prev) => [...prev, newComment]);
+  };
+
+  const handleCommentUpdated = (updatedComment) => {
+    setComments((prev) =>
+      prev.map((c) => (c.id === updatedComment.id ? updatedComment : c))
+    );
+  };
+
+  const handleCommentDeleted = (deletedId) => {
+    setComments((prev) => prev.filter((c) => c.id !== deletedId));
+  };
+
   if (loading) return <p>Loading...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
-  const isOwner = post.author.id === user.id;
+  const isPostOwner = post.author.id === user.id;
 
   return (
     <div>
@@ -53,10 +70,10 @@ function PostDetailPage() {
           By {post.author.username} · {new Date(post.created_at).toLocaleDateString()}
         </small>
 
-        {isOwner && (
+        {isPostOwner && (
           <div style={{ margin: '0.5rem 0' }}>
             <Link to={`/posts/${id}/edit`}>Edit</Link>
-            <button onClick={handleDelete} style={{ marginLeft: '1rem' }}>Delete</button>
+            <button onClick={handleDeletePost} style={{ marginLeft: '1rem' }}>Delete</button>
           </div>
         )}
 
@@ -64,14 +81,18 @@ function PostDetailPage() {
 
         <hr />
 
-        <h3>Comments ({post.comments.length})</h3>
-        {post.comments.length === 0 && <p>No comments yet.</p>}
-        {post.comments.map((comment) => (
-          <div key={comment.id} style={{ borderBottom: '1px solid #eee', padding: '0.5rem 0' }}>
-            <strong>{comment.author.username}</strong>
-            <p>{comment.content}</p>
-          </div>
+        <h3>Comments ({comments.length})</h3>
+        {comments.length === 0 && <p>No comments yet.</p>}
+        {comments.map((comment) => (
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            onUpdated={handleCommentUpdated}
+            onDeleted={handleCommentDeleted}
+          />
         ))}
+
+        <CommentForm postId={post.id} onCommentAdded={handleCommentAdded} />
       </div>
     </div>
   );
